@@ -1,95 +1,312 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// flushKardz/page.js
+
+/* Copyright (C) 2024 Lloyd Chang - All Rights Reserved
+ * You may use, distribute and modify this code under the
+ * terms of the AGPLv3 license.
+ *
+ * You should have received a copy of the AGPLv3 license with
+ * this file. If not, please visit: https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Box, Typography, AppBar, Toolbar, Button } from '@mui/material';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import getStripe from '../utils/get-stripe';
+import '../styles/globals.css';
 
 export default function Home() {
+  const { isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+  const [isLandscape, setIsLandscape] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    // Check if the window is in landscape mode
+    const handleOrientationChange = () => {
+      const isCurrentlyLandscape = window.matchMedia('(orientation: landscape)').matches;
+      setIsLandscape(isCurrentlyLandscape);
+      
+      if (!isCurrentlyLandscape) {
+        setShowWarning(true);
+        setTimeout(() => {
+          setShowWarning(false);
+        }, 1000); // 1 second
+      }
+    };
+
+    handleOrientationChange();
+    window.addEventListener('resize', handleOrientationChange);
+
+    return () => window.removeEventListener('resize', handleOrientationChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const queryParams = new URLSearchParams(window.location.search);
+      const redirectTo = queryParams.get('redirectTo') || '/';
+
+      if (redirectTo && redirectTo !== '/') {
+        router.push(redirectTo);
+      }
+    }
+  }, [router]);
+
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('api/buy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const checkoutSessionJson = await response.json();
+
+      const stripe = await getStripe();
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: checkoutSessionJson.id,
+      });
+
+      if (error) {
+        console.warn(error.message);
+      }
+    } catch (error) {
+      console.error('Error during checkout process:', error);
+    }
+  };
+
+  const buttonStyle = {
+    background: 'linear-gradient(45deg, #00c6ff, #0072ff)',
+    borderRadius: 50,
+    px: 4,
+    py: 2,
+    fontSize: '1.5rem',
+    color: 'white',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    transition: '0.3s',
+    '&:hover': {
+      background: 'linear-gradient(45deg, #0072ff, #00c6ff)',
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)',
+    },
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      {showWarning && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1300,
+            textAlign: 'center',
+            padding: '1rem',
+          }}
+        >
+          <Typography variant="h6">
+            Please rotate your device to landscape mode for the best experience.
+          </Typography>
+        </Box>
+      )}
+
+      <AppBar 
+        position="absolute" 
+        sx={{ 
+          backgroundColor: 'transparent', 
+          boxShadow: 'none', 
+          backdropFilter: 'none', 
+          zIndex: 1201, 
+          width: '100%',
+        }}
+      >
+        <Toolbar sx={{ width: '100%', justifyContent: 'center', position: 'relative' }}>
+          <Button
+            onClick={handleSubmit}
+            sx={{ 
+              ...buttonStyle,
+              fontSize: '1rem', 
+              px: 2, 
+              py: 1,
+              position: 'absolute',
+              top: 16,
+              left: '25%',
+              transform: 'translateX(-50%)',
+              zIndex: 1200,
+            }}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+            Buy-In Stripe
+          </Button>
+          <Button
+            component={Link}
+            href="/play"
+            sx={{ 
+              ...buttonStyle,
+              fontSize: '1rem', 
+              px: 2, 
+              py: 1,
+              position: 'absolute',
+              top: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1200,
+            }}
+          >
+            Play
+          </Button>
+          <Button
+            component={Link}
+            href={isSignedIn ? "/sign-out" : "/sign-in"}
+            color="inherit"
+            sx={{ 
+              ...buttonStyle,
+              fontSize: '1rem', 
+              px: 2, 
+              py: 1,
+              position: 'absolute',
+              top: 16,
+              right: '25%',
+              transform: 'translateX(50%)',
+              zIndex: 1200,
+            }}
+          >
+            {isSignedIn ? 'Sign-Out Twitch' : 'Sign-In Twitch'}
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <Box
+        sx={{
+          width: '100vw',
+          height: '100vh',
+          backgroundImage: 'url(home.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+          filter: 'saturate(50%)', // Reducing the saturation of the background image
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Adding the semi-transparent overlay
+            zIndex: 1,
+            animation: 'pulseOverlay 2s infinite',
+          },
+        }}
+      >
+        <Container 
+          maxWidth="md"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            p: 2,
+            position: 'relative',
+            zIndex: 2, // Ensuring content is above the overlay
+          }}
+        >
+          <Box 
+            sx={{
+              textAlign: 'center',
+              width: '100%',
+              maxWidth: '90%',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              borderRadius: 2,
+              p: 2,
+              position: 'relative',
+              marginTop: '15%',
+            }}
+          >
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              gutterBottom 
+              sx={{ color: 'white', animation: 'flash 2s infinite' }}
+            >
+              flushKardz
+            </Typography>
+          </Box>
+        </Container>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
+        {/* YouTube video embed */}
+        <Box
+          sx={{
+            mt: 4,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            position: 'relative',
+            width: '1080px', // Fixed width
+            height: '1920px', // Fixed height
+            zIndex: 3, // Ensure the video container is on top
+          }}
+        >
+          <iframe
+            src="https://www.youtube.com/embed/CF0IOFv4rY8?autoplay=1"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              width: '100%', 
+              height: '100%', 
+              border: 'none' 
+            }}
+          ></iframe>
+        </Box>
+      </Box>
+
+      <Box 
+        sx={{ 
+          width: '100%', 
+          position: 'absolute', 
+          bottom: 0, 
+          textAlign: 'center', 
+          py: 1, 
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+          color: 'white',
+          fontSize: '0.75rem',
+        }}
+      >
+        <Link
+          href="https://github.com/lloydchang/flushKardz/blob/main/public/flushKardz.vercel.app%20%C2%A9%202024%20Lloyd%20Chang.pdf"
           target="_blank"
           rel="noopener noreferrer"
+          underline="none"
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+          <Typography>© 2024 Lloyd Chang</Typography>
+        </Link>
+      </Box>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <style jsx global>{`
+        @keyframes pulseOverlay {
+          0% {
+            background-color: rgba(0, 0, 0, 0.5);
+          }
+          50% {
+            background-color: rgba(0, 0, 0, 0.2);
+          }
+          100% {
+            background-color: rgba(0, 0, 0, 0.5);
+          }
+        }
+      `}</style>
+    </>
   );
 }
