@@ -1,6 +1,6 @@
 // flushKardz/utils/get-stripe.js
 
-/* Copyright (C) 2024 Lloyd Chang - All Rights Reserved
+/* Copyright (C) 2024 bayo herbert - All Rights Reserved
  * You may use, distribute and modify this code under the
  * terms of the AGPLv3 license.
  *

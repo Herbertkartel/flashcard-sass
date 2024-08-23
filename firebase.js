@@ -1,34 +1,21 @@
-// flushKardz/firebase.js
-
-/* Copyright (C) 2024 Lloyd Chang - All Rights Reserved
- * You may use, distribute and modify this code under the
- * terms of the AGPLv3 license.
- *
- * You should have received a copy of the AGPLv3 license with
- * this file. If not, please visit: https://www.gnu.org/licenses/agpl-3.0.html
- */
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
+import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-import { getFirestore } from "firebase/firestore";  // Make sure to add this import
-
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBmnAY2R6Phi_QTd9Q5kh90NxaXx5gkyC0",
-  authDomain: "flushKard-saas-ecd70.firebaseapp.com",
-  projectId: "flushKard-saas-ecd70",
-  storageBucket: "flushKard-saas-ecd70.appspot.com",
-  messagingSenderId: "31191270260",
-  appId: "1:31191270260:web:4041381f3730674a7b6221",
-  measurementId: "G-N45JPV3Y7C"
+  apiKey: "AIzaSyC5XrXvUf2CH-iiqzuAj3QFzJVpOSrXBIg",
+  authDomain: "flashcard-sass-7f93b.firebaseapp.com",
+  projectId: "flashcard-sass-7f93b",
+  storageBucket: "flashcard-sass-7f93b.appspot.com",
+  messagingSenderId: "61990595768",
+  appId: "1:61990595768:web:cf956ce11012528739d84d",
+  measurementId: "G-TKD6ZB00W3"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
-const db = getFirestore(app);
-
-export default db;
+const analytics = getAnalytics(app);
