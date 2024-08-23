@@ -1,4 +1,4 @@
-/* Copyright (C) 2024 Lloyd Chang - All Rights Reserved
+/* Copyright (C) 2024 Bayo Herbert - All Rights Reserved
  * You may use, distribute and modify this code under the
  * terms of the AGPLv3 license.
  *
@@ -6,6 +6,6 @@
  * this file. If not, please visit: https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-# flushKardz
+# flashcards sass
 
- © 2024 Lloyd Chang
+ © 2024 Bayo Herbert
